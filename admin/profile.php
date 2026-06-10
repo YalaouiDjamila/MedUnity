@@ -89,24 +89,26 @@ if(isset($_POST['change_password'])){
 
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
-            // PREPARED STATEMENT (FIX SECURITY + GITLEAKS FALSE POSITIVE)
-            $stmt = $database->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt = $database->prepare("
+        UPDATE users
+        SET password = ?
+        WHERE id = ?
+    ");
 
             $stmt->bind_param("si", $hashed_password, $user_id);
             $stmt->execute();
 
-            $success_msg = "Mot de passe modifié avec succès !";
-
-            // Journalisation sécurisée aussi
             $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
-            $log = $database->prepare(
-                    "INSERT INTO logs (user_id, action, entity_type, ip_address)
-         VALUES (?, 'CHANGE_PASSWORD', 'profile', ?)"
-            );
+            $log = $database->prepare("
+        INSERT INTO logs (user_id, action, entity_type, ip_address)
+        VALUES (?, 'CHANGE_PASSWORD', 'profile', ?)
+    ");
 
             $log->bind_param("is", $user_id, $ip);
             $log->execute();
+
+            $success_msg = "Mot de passe modifié avec succès !";
         }
     }
 }
