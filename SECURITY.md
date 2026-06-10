@@ -1,14 +1,14 @@
-# 🔐 Security Policy
+#  Security Policy
 
-## 📌 Introduction
+##  Introduction
 
 La sécurité des données est une priorité pour ce projet, notamment en raison de la sensibilité des informations médicales traitées.
 
 ---
 
-## 🛡️ Mesures de sécurité
+##  Mesures de sécurité
 
-### 🔑 Authentification
+###  Authentification
 
 * Accès sécurisé via **email et mot de passe**
 * Implémentation de l’authentification multi-facteurs (MFA / 2FA)
@@ -18,7 +18,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 🔒 Politique des mots de passe
+###  Politique des mots de passe
 
 * Minimum 8 caractères
 * Doit contenir :
@@ -31,7 +31,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 🔐 Hachage des mots de passe
+###  Hachage des mots de passe
 
 * Les mots de passe ne sont **jamais stockés en clair**
 * Utilisation d’un algorithme de hachage sécurisé (ex : bcrypt)
@@ -39,7 +39,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 🚫 Protection contre les attaques (Brute Force)
+###  Protection contre les attaques (Brute Force)
 
 * Blocage temporaire du compte après plusieurs tentatives de connexion échouées
 * Suivi et journalisation des tentatives de connexion
@@ -47,7 +47,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 🧠 Sécurisation de la base de données
+###  Sécurisation de la base de données
 
 * Utilisation de requêtes préparées (Prepared Statements) pour éviter les **SQL Injection**
 * Validation et filtrage des entrées utilisateur
@@ -56,7 +56,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 🌐 Protection des applications web
+###  Protection des applications web
 
 * Protection contre les attaques XSS (Cross-Site Scripting)
 * Protection contre les attaques CSRF
@@ -64,14 +64,14 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 👥 Contrôle d’accès
+###  Contrôle d’accès
 
 * Gestion des rôles (Admin, Médecin, Secrétaire, etc.)
 * Accès limité selon les permissions (RBAC)
 
 ---
 
-### 📊 Journalisation (Audit)
+###  Journalisation (Audit)
 
 * Enregistrement des actions utilisateurs
 * Suivi des connexions (succès / échec)
@@ -79,7 +79,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-### 💾 Protection des données
+###  Protection des données
 
 * Stockage sécurisé des informations médicales
 * Sauvegardes régulières de la base de données
@@ -87,7 +87,7 @@ La sécurité des données est une priorité pour ce projet, notamment en raison
 
 ---
 
-## ⚠️ Signalement de vulnérabilités
+##  Signalement de vulnérabilités
 
 Si vous découvrez une faille de sécurité, merci de :
 
@@ -97,7 +97,7 @@ Si vous découvrez une faille de sécurité, merci de :
 
 ---
 
-## 🚫 Bonnes pratiques
+##  Bonnes pratiques
 
 * Ne pas partager les identifiants
 * Utiliser des mots de passe forts
@@ -106,13 +106,13 @@ Si vous découvrez une faille de sécurité, merci de :
 
 ---
 
-## 🔄 Mises à jour
+##  Mises à jour
 
 Les correctifs de sécurité seront appliqués dès qu’une vulnérabilité est identifiée.
 
 ---
 
-## 📩 Contact
+##  Contact
 
 
 yalaoui.djamila@univ-constantine2.dz
