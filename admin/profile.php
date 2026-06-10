@@ -83,16 +83,30 @@ if(isset($_POST['change_password'])){
         if(!preg_match('/[0-9]/', $new_password)) $complexity_errors[] = "un chiffre";
         if(!preg_match('/[!@#$%^&*()_+\-=\[\]{};:\'",.<>?\/\\|`~]/', $new_password)) $complexity_errors[] = "un caractère spécial";
 
-        if(!empty($complexity_errors)){
+        if (!empty($complexity_errors)) {
             $error_msg = "Mot de passe faible : " . implode(", ", $complexity_errors);
         } else {
+
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $database->query("UPDATE users SET password='$hashed_password' WHERE id=$user_id");
+
+            // PREPARED STATEMENT (FIX SECURITY + GITLEAKS FALSE POSITIVE)
+            $stmt = $database->prepare("UPDATE users SET password = ? WHERE id = ?");
+
+            $stmt->bind_param("si", $hashed_password, $user_id);
+            $stmt->execute();
+
             $success_msg = "Mot de passe modifié avec succès !";
 
-            // Journaliser le changement
-            $ip = $_SERVER['REMOTE_ADDR'];
-            $database->query("INSERT INTO logs (user_id, action, entity_type, ip_address) VALUES ($user_id, 'CHANGE_PASSWORD', 'profile', '$ip')");
+            // Journalisation sécurisée aussi
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+            $log = $database->prepare(
+                    "INSERT INTO logs (user_id, action, entity_type, ip_address)
+         VALUES (?, 'CHANGE_PASSWORD', 'profile', ?)"
+            );
+
+            $log->bind_param("is", $user_id, $ip);
+            $log->execute();
         }
     }
 }
