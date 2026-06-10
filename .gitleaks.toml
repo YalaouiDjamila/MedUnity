@@ -1,0 +1,6 @@
+title = "MedUnity Secret Detection"
+
+[[rules]]
+id = "password"
+
+regex = '''(?i)(password|passwd|pwd)\s*=\s*['"].+['"]'''

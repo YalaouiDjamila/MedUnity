@@ -1,0 +1,22 @@
+services:
+
+  medunity:
+    build:
+      context: .
+      dockerfile: security/docker/Dockerfile
+
+    ports:
+      - "8080:80"
+
+    volumes:
+      - .:/var/www/html
+
+  mysql:
+    image: mysql:8
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: medunity
+
+    ports:
+      - "3306:3306"

@@ -1,9 +1,9 @@
 <?php
-$servername = "127.0.0.1";
-$username = "root";  
-$password = ""; 
-$dbname = "edoc"; 
 
+$servername = getenv('servername');
+$username = getenv('username');
+$password = getenv('password');
+$dbname = getenv('dbname');
 $database = new mysqli($servername, $username, $password, $dbname);
 
 if ($database->connect_error) {

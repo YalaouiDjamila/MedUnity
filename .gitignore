@@ -1,5 +1,14 @@
 .idea/
-admin/backups/
+vendor/
+
 uploads/
+
+admin/backups/
+
 *.sql
 *.gz
+
+.env
+.env.*
+
+security/reports/
