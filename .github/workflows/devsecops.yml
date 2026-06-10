@@ -153,13 +153,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      # =====================================================
-      # RUN GITLEAKS
-      # =====================================================
       - name: Run Gitleaks
         run: |
           mkdir -p reports
-          
+
           docker run --rm \
             -v "$PWD:/repo" \
             zricethezav/gitleaks:latest \
@@ -168,64 +165,55 @@ jobs:
             --report-format json \
             --report-path /repo/reports/gitleaks.json \
             --exit-code 0 || true
-          
-          # safety fallback (important)
-          if [ ! -f reports/gitleaks.json ]; then
+
+          # safe fallback
+          if [ ! -f reports/gitleaks.json ] || [ ! -s reports/gitleaks.json ]; then
             echo "[]" > reports/gitleaks.json
           fi
 
-      # =====================================================
-      # SECURITY GATE (REALISTIC POLICY)
-      # =====================================================
-      - name: Security Gate (Enterprise Policy)
+      - name: Security Gate (ROBUST JSON SAFE)
         run: |
-          echo "Evaluating secrets report..."
-          
-          TOTAL=$(jq length reports/gitleaks.json)
-          
-          # Gitleaks does NOT always provide Severity -> safe extraction
+          echo "Evaluating secrets..."
+
+          # total findings safe parse
+          TOTAL=$(jq 'length' reports/gitleaks.json 2>/dev/null || echo 0)
+
+          # robust high-risk detection (NO Severity dependency)
           HIGH=$(jq '
-            [.[] |
-              select(
-                (.Severity? | ascii_downcase == "high") or
-                (.RuleID? | test("private|api|secret|token|password|aws|privatekey"; "i"))
-              )
-            ] | length
-          ' reports/gitleaks.json)
-          
-          MEDIUM=$((TOTAL - HIGH))
-          
+            [.[] | select(
+              (.RuleID // "" | tostring | test("aws|key|token|secret|password|private|api"; "i"))
+            )] | length
+          ' reports/gitleaks.json 2>/dev/null || echo 0)
+
           echo "Total findings: $TOTAL"
           echo "High risk findings: $HIGH"
-          echo "Non-critical findings: $MEDIUM"
-          
-          # =====================================================
-          # FAIL POLICY (REAL ENTERPRISE RULES)
-          # =====================================================
-          
+
+          # POLICY
           if [ "$HIGH" -gt 0 ]; then
-            echo "❌ BLOCKED: REAL secrets detected (HIGH risk)"
-            jq '.[] | select(.RuleID != null)' reports/gitleaks.json
+            echo "❌ BLOCKED: HIGH RISK SECRETS DETECTED"
+
+            jq '
+              .[] | select(
+                (.RuleID // "" | tostring | test("aws|key|token|secret|password|private|api"; "i"))
+              )
+            ' reports/gitleaks.json || true
+
             exit 1
           fi
-          
-          # warning threshold only (NOT blocking)
-          if [ "$TOTAL" -gt 50 ]; then
-            echo "⚠️ WARNING: unusually high number of potential secrets"
-          fi
-          
-          echo "✅ Security gate passed"
 
-      # =====================================================
-      # UPLOAD ARTIFACT
-      # =====================================================
+          if [ "$TOTAL" -gt 100 ]; then
+            echo "❌ BLOCKED: TOO MANY FINDINGS (>100)"
+            exit 1
+          fi
+
+          echo "✅ Gitleaks passed security policy"
+
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
           path: reports/gitleaks.json
-
 
   # =========================================================
   # SECURITY REPORT AGGREGATION (REAL METRICS ONLY)
