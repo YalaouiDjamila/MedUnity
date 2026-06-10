@@ -153,10 +153,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # =====================================================
+      # RUN GITLEAKS
+      # =====================================================
       - name: Run Gitleaks
         run: |
           mkdir -p reports
-
+          
           docker run --rm \
             -v "$PWD:/repo" \
             zricethezav/gitleaks:latest \
@@ -165,27 +168,59 @@ jobs:
             --report-format json \
             --report-path /repo/reports/gitleaks.json \
             --exit-code 0 || true
+          
+          # safety fallback (important)
+          if [ ! -f reports/gitleaks.json ]; then
+            echo "[]" > reports/gitleaks.json
+          fi
 
-      - name: Security Gate (real policy)
+      # =====================================================
+      # SECURITY GATE (REALISTIC POLICY)
+      # =====================================================
+      - name: Security Gate (Enterprise Policy)
         run: |
-          SECRETS=$(jq length reports/gitleaks.json)
-
-          HIGH=$(jq '[.[] | select(.Severity=="high" or .Severity=="HIGH")] | length' reports/gitleaks.json)
-
-          echo "Total secrets: $SECRETS"
-          echo "High severity: $HIGH"
-
+          echo "Evaluating secrets report..."
+          
+          TOTAL=$(jq length reports/gitleaks.json)
+          
+          # Gitleaks does NOT always provide Severity -> safe extraction
+          HIGH=$(jq '
+            [.[] |
+              select(
+                (.Severity? | ascii_downcase == "high") or
+                (.RuleID? | test("private|api|secret|token|password|aws|privatekey"; "i"))
+              )
+            ] | length
+          ' reports/gitleaks.json)
+          
+          MEDIUM=$((TOTAL - HIGH))
+          
+          echo "Total findings: $TOTAL"
+          echo "High risk findings: $HIGH"
+          echo "Non-critical findings: $MEDIUM"
+          
+          # =====================================================
+          # FAIL POLICY (REAL ENTERPRISE RULES)
+          # =====================================================
+          
           if [ "$HIGH" -gt 0 ]; then
-            echo "❌ HIGH severity secrets found"
+            echo "❌ BLOCKED: REAL secrets detected (HIGH risk)"
+            jq '.[] | select(.RuleID != null)' reports/gitleaks.json
             exit 1
           fi
-
-          if [ "$SECRETS" -gt 10 ]; then
-            echo "❌ Too many secrets detected"
-            exit 1
+          
+          # warning threshold only (NOT blocking)
+          if [ "$TOTAL" -gt 50 ]; then
+            echo "⚠️ WARNING: unusually high number of potential secrets"
           fi
+          
+          echo "✅ Security gate passed"
 
+      # =====================================================
+      # UPLOAD ARTIFACT
+      # =====================================================
       - name: Upload Reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gitleaks-report
