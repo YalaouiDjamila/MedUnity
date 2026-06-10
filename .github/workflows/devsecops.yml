@@ -70,6 +70,7 @@ jobs:
         run: |
           mkdir -p reports
 
+
           semgrep scan \
             --config=p/php \
             --config=p/security-audit \
