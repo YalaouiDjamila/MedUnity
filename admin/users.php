@@ -98,8 +98,9 @@ if(isset($_POST['reset_password'])){
     }
 
     $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-    $database->query("UPDATE users SET password='$hashed' WHERE id=$uid");
-
+    $stmt = $database->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $stmt->bind_param("si", $hashed, $uid);
+    $stmt->execute();
     // Log
     $actor = intval($_SESSION['uid'] ?? 1);
     $database->query("INSERT INTO logs (user_id, action, entity_type, entity_id, ip_address) VALUES ($actor, 'RESET_PASSWORD', 'users', $uid, '{$_SERVER['REMOTE_ADDR']}')");
